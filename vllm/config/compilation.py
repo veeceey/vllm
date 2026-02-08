@@ -611,6 +611,24 @@ class CompilationConfig:
     NB: We're working on a longer-term solution that doesn't need these assumptions.
     """
 
+    fast_kv_cache_update_cold_start = True
+    """Optimization for fast KV cache update cold start.
+
+    This is a bit of a hack that assumes that:
+    1. the only decoder forward pass being run is the current model
+    2. the decoder forward pass runs all of the KV cache updates in the order in which they
+       are initialized
+
+    When the above two conditions hold, this option greatly decreases cold start
+    time by removing attention layer names from unified_kv_cache_update.
+
+    If the above two conditions don't hold, then this option will lead to silent
+    incorrectness. The only condition in which this doesn't hold is speculative
+    decoding, where there is a draft model that may have KV cache updates.
+
+    NB: We're working on a longer-term solution that doesn't need these assumptions.
+    """
+
     # keep track of enabled and disabled custom ops
     enabled_custom_ops: Counter[str] = field(default_factory=Counter, init=False)
     """custom ops that are enabled"""
